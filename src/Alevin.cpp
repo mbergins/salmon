@@ -499,7 +499,7 @@ void indexBarcodes(AlevinOpts<ProtocolT>& aopt,
   //Done filling ZMatrix
 
   aopt.jointLog->info("Done populating Z matrix");
-  if(trueBarcodes.size() - wrngWhiteListCount < 50){
+  if( trueBarcodes.size()>50 and trueBarcodes.size()-wrngWhiteListCount < 50){
     aopt.jointLog->warn("{} Whitelisted Barcodes with 0 frequency", wrngWhiteListCount);
   }
 

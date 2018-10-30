@@ -5,12 +5,14 @@
 #include <unordered_set>
 #include <functional>
 #include <thread>
+#include <assert.h>
 
 #include "tbb/atomic.h"
 #include "tbb/task_scheduler_init.h"
 
 #include <boost/filesystem.hpp>
 
+#include "EMUtils.hpp"
 #include "ReadExperiment.hpp"
 #include "SalmonOpts.hpp"
 #include "GZipWriter.hpp"
@@ -20,6 +22,7 @@
 #include "SingleCellProtocols.hpp"
 #include "WhiteList.hpp"
 #include "DedupUMI.hpp"
+#include "Share.hpp"
 
 #include "cuckoohash_map.hh"
 #include "Eigen/Dense"
@@ -71,7 +74,8 @@ void optimizeCell(SCExpT& experiment,
                   bool quiet, tbb::atomic<double>& totalDedupCounts,
                   spp::sparse_hash_map<uint32_t, uint32_t>& txpToGeneMap,
                   uint32_t numGenes, bool inDebugMode, uint32_t numBootstraps,
-                  bool naiveEqclass, bool dumpUmiGraph);
+                  bool naiveEqclass, bool dumpUmiGraph,
+                  std::vector<std::vector<SalmonEqClass>>& allClasses);
 
 using VecT = CollapsedCellOptimizer::SerialVecType;
 

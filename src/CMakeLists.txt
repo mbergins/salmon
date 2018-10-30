@@ -32,6 +32,7 @@ DedupUMI.cpp
 Alevin.cpp
 SalmonAlevin.cpp
 WhiteList.cpp
+Share.cpp
 SalmonQuantify.cpp
 FragmentLengthDistribution.cpp
 FragmentStartPositionDistribution.cpp

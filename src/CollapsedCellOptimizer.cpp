@@ -1,6 +1,4 @@
 #include "CollapsedCellOptimizer.hpp"
-#include "EMUtils.hpp"
-#include <assert.h>
 
 CollapsedCellOptimizer::CollapsedCellOptimizer() {}
 /*
@@ -245,7 +243,8 @@ void optimizeCell(SCExpT& experiment,
                   bool quiet, tbb::atomic<double>& totalDedupCounts,
                   spp::sparse_hash_map<uint32_t, uint32_t>& txpToGeneMap,
                   uint32_t numGenes, bool inDebugMode, uint32_t numBootstraps,
-                  bool naiveEqclass, bool dumpUmiGraph){
+                  bool naiveEqclass, bool dumpUmiGraph,
+                  std::vector<std::vector<SalmonEqClass>>& allClasses){
   size_t numCells {trueBarcodes.size()};
   size_t trueBarcodeIdx;
 
@@ -326,6 +325,8 @@ void optimizeCell(SCExpT& experiment,
         jointlog->flush();
         exit(1);
       }
+
+      allClasses[trueBarcodeIdx] = salmonEqclasses;
 
       // perform EM for resolving ambiguity
       if ( !noEM ) {
@@ -525,6 +526,8 @@ bool CollapsedCellOptimizer::optimize(SCExpT& experiment,
   std::atomic<uint32_t> bcount{0};
   tbb::atomic<double> totalDedupCounts{0.0};
 
+  std::vector<std::vector<SalmonEqClass>> allClasses (numCells);
+
   std::vector<std::thread> workerThreads;
   for (size_t tn = 0; tn < numWorkerThreads; ++tn) {
     workerThreads.emplace_back(optimizeCell,
@@ -549,7 +552,8 @@ bool CollapsedCellOptimizer::optimize(SCExpT& experiment,
                                aopt.debug,
                                aopt.numBootstraps,
                                aopt.naiveEqclass,
-                               aopt.dumpUmiGraph);
+                               aopt.dumpUmiGraph,
+                               std::ref(allClasses));
   }
 
   for (auto& t : workerThreads) {
@@ -661,6 +665,11 @@ bool CollapsedCellOptimizer::optimize(SCExpT& experiment,
         }
         aopt.jointLog->info("Finished white listing");
       }
+    }
+    else{
+      // run only when given external whitelist
+      // calling share function to do eqclass level optimization
+      alevin::share::optimizeCountMatrix(allClasses, numCells, numGenes);
     }
   } // end-if no barcode
 
